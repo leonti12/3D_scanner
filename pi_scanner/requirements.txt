@@ -1,0 +1,5 @@
+PyQt6>=6.6
+gpiozero>=2.0
+# Optional, only needed if you switch camera.py to use picamera2 directly
+# instead of the rpicam-still/rpicam-hello CLI:
+# picamera2

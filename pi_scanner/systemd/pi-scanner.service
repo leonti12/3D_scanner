@@ -1,0 +1,19 @@
+[Unit]
+Description=Pi 3D Scanner Kiosk UI
+After=graphical.target
+Wants=graphical.target
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+Environment=DISPLAY=:0
+Environment=XAUTHORITY=/home/pi/.Xauthority
+WorkingDirectory=/home/pi/pi_scanner
+ExecStartPre=-/usr/bin/xset s off -dpms
+ExecStart=/usr/bin/python3 /home/pi/pi_scanner/main.py
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=graphical.target
