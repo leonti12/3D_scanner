@@ -1,6 +1,6 @@
 import math
 
-class TriangulationEngine:
+class Triangulation:
     def __init__(self, baseline_mm, laser_angle_deg, focal_length_x_px, focal_length_y_px, image_width_px, image_height_px):
         self.b = baseline_mm
         self.theta = math.radians(laser_angle_deg)

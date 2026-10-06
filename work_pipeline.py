@@ -17,14 +17,15 @@ image_width_px = 1456
 image_height_px = 1088
 distance_to_center_mm = 350
 
-# Convert to integer for clean loop logic
-total_steps = int(360 / 1.8 * 8)
+default_step_size_deg = 1.8
+microstepping_size = 8
+
+total_steps = int(360 / default_step_size_deg * microstepping_size)
 step_count = 0
 
 #  ** inits of the classes **
 steger = StegerExtractor(threshold=40)
-# Removed 'self' and attached to module namespace
-triangulation_engine = triangulation.TriangulationEngine(baseline_mm, laser_angle_deg, focal_length_x_px, focal_length_y_px, image_width_px, image_height_px)
+triangulation = triangulation.Triangulation(baseline_mm, laser_angle_deg, focal_length_x_px, focal_length_y_px, image_width_px, image_height_px)
 stepper = StepperSerial("/dev/ttyESP", 115200, 2.0, 1.0)
 
 point_cloud = []
@@ -34,29 +35,20 @@ def pipeline():
     
     picam2.start()
 
-    # Standard loop condition
     while step_count < total_steps:
         frame = picam2.capture_array()
         pts = steger.process(frame)     
 
         for point in pts:  
-            # Call method on the initialized class instance
-            xyz_coordinate = triangulation_engine.calculate_3d_point(point[0], point[1])
-            
-            # Ensure the point is mathematically valid before passing it on
+            xyz_coordinate = triangulation.calculate_3d_point(point[0], point[1])
+
             if xyz_coordinate is not None:
-                # Unpack the X, Y, Z tuple into separate arguments
-                global_coords = triangulation.calculate_global_point(
-                    xyz_coordinate[0], xyz_coordinate[1], distance_to_center_mm-xyz_coordinate[2], 
-                    step_count, total_steps, 35, 10
-                )
+                global_coords = triangulation.calculate_global_point(xyz_coordinate[0], xyz_coordinate[1], distance_to_center_mm-xyz_coordinate[2], step_count, total_steps, 35, 10)
                 point_cloud.append(global_coords)
 
-        # Move stepper 5 times quickly
-        for _ in range(5):
+        for _ in range(5):   #5 step so tests go faster
             stepper.step()
             
-        # CRITICAL: Update the step count so the angle calculation knows we moved
         step_count += 5 
         print(f"progress: {(step_count/total_steps * 100):.1f}%")
         
